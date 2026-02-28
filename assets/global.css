@@ -1,0 +1,8 @@
+/* Global font defaults — ensures Inter is applied to all elements,
+   not just those with an explicit Tamagui fontFamily prop. */
+body,
+html {
+  font-family: 'Inter', -apple-system, system-ui, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+

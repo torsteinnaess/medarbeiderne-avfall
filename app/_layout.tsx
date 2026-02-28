@@ -1,31 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import {
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import "react-native-reanimated";
+import { TamaguiProvider } from "tamagui";
 
-import { useColorScheme } from '@/components/useColorScheme';
+import "@/assets/global.css";
+import "@tamagui/font-inter/css/400.css";
+import "@tamagui/font-inter/css/500.css";
+import "@tamagui/font-inter/css/600.css";
+import "@tamagui/font-inter/css/700.css";
+import "@tamagui/font-inter/css/800.css";
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+import { useColorScheme } from "@/components/useColorScheme";
+import config from "@/config/tamagui.config";
+import { AuthProvider } from "@/lib/providers/auth-provider";
+import { QueryProvider } from "@/lib/providers/query-provider";
+import { colors } from "@/lib/theme";
+
+export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: "(tabs)",
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Inter: require("@tamagui/font-inter/otf/Inter-Regular.otf"),
+    InterMedium: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
+    InterSemiBold: require("@tamagui/font-inter/otf/Inter-SemiBold.otf"),
+    InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
+    InterExtraBold: require("@tamagui/font-inter/otf/Inter-ExtraBold.otf"),
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -46,12 +60,44 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.textPrimary,
+      border: colors.border,
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <TamaguiProvider config={config} defaultTheme={colorScheme ?? "light"}>
+      <QueryProvider>
+        <AuthProvider>
+          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : navTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="order"
+                options={{
+                  headerShown: false,
+                  presentation: "card",
+                }}
+              />
+              <Stack.Screen
+                name="orders/[id]"
+                options={{
+                  title: "Ordredetaljer",
+                  headerBackTitle: "Tilbake",
+                }}
+              />
+            </Stack>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryProvider>
+    </TamaguiProvider>
   );
 }
