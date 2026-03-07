@@ -27,7 +27,11 @@ import {
     fetchOrder,
     fetchOrders,
 } from "./orders";
-import { type CreatePaymentResponse, createPayment } from "./payments";
+import {
+    type CreatePaymentOptions,
+    type CreatePaymentResponse,
+    createPayment,
+} from "./payments";
 import { calculatePrice } from "./pricing";
 import { fetchProfile, updateProfile } from "./profile";
 
@@ -89,7 +93,7 @@ export function useLastPickupDetails() {
 // --- Betaling ---
 
 export function useCreatePayment() {
-  return useMutation<CreatePaymentResponse, Error, string>({
+  return useMutation<CreatePaymentResponse, Error, CreatePaymentOptions>({
     mutationFn: createPayment,
   });
 }

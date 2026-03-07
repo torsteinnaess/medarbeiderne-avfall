@@ -105,16 +105,29 @@ serve(async (req: Request) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Verifiser bruker
+    // Verifiser bruker — pass JWT eksplisitt for å unngå at getUser() prøver å lese fra session
+    const token = authHeader.replace("Bearer ", "");
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser(token);
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Ugyldig autentisering" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error(
+        "[create-order] Auth error:",
+        authError?.message,
+        "User:",
+        user,
+      );
+      return new Response(
+        JSON.stringify({
+          error: "Ugyldig autentisering",
+          details: authError?.message ?? "Ingen bruker funnet",
+        }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const body = (await req.json()) as CreateOrderRequest;

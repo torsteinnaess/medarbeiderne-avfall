@@ -4,6 +4,7 @@ import type { AnalysisResult } from "../types";
 import { withNetworkError } from "../utils/network-error";
 
 // Analyser bilder via Edge Function (GPT-4o Vision)
+// Denne funksjonen krever IKKE autentisering — den er offentlig tilgjengelig
 export function analyzeImages(imageUrls: string[]): Promise<AnalysisResult> {
   return withNetworkError(async () => {
     const { data, error } = await supabase.functions.invoke("analyze-images", {

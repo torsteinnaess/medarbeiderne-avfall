@@ -1,5 +1,6 @@
 // Betalings-API — Quickpay-integrasjon
-import { supabase } from "../supabase";
+import { useAuthStore } from "../stores/auth";
+import { supabaseAnonKey, supabaseUrl } from "../supabase";
 import { withNetworkError } from "../utils/network-error";
 
 export interface CreatePaymentResponse {
@@ -7,32 +8,59 @@ export interface CreatePaymentResponse {
   quickpay_payment_id: number;
 }
 
+export type PaymentMethod = "creditcard" | "vipps" | "apple-pay" | "google-pay";
+
+export interface CreatePaymentOptions {
+  orderId: string;
+  paymentMethod: PaymentMethod;
+  continueUrl?: string;
+  cancelUrl?: string;
+}
+
 // Opprett Quickpay-betaling og hent betalingslenke
-export function createPayment(orderId: string): Promise<CreatePaymentResponse> {
+// Bruker raw fetch i stedet for supabase.functions.invoke fordi
+// invoke-klienten kaller getSession() internt, som henger på native (SecureStore).
+export function createPayment(
+  options: CreatePaymentOptions,
+): Promise<CreatePaymentResponse> {
   return withNetworkError(async () => {
-    // Forny sesjon for å sikre at JWT ikke er utløpt
-    const {
-      data: { session },
-    } = await supabase.auth.refreshSession();
-    if (!session?.access_token) {
+    const accessToken = useAuthStore.getState().session?.access_token;
+    if (!accessToken) {
       throw new Error("Du må være innlogget for å betale");
     }
 
-    const { data, error } = await supabase.functions.invoke("create-payment", {
-      body: { order_id: orderId },
+    const res = await fetch(`${supabaseUrl}/functions/v1/create-payment`, {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
       },
+      body: JSON.stringify({
+        order_id: options.orderId,
+        payment_method: options.paymentMethod,
+        continue_url: options.continueUrl,
+        cancel_url: options.cancelUrl,
+      }),
     });
 
-    if (error) {
-      throw new Error(`Feil ved opprettelse av betaling: ${error.message}`);
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body?.error) message = body.error;
+      } catch {
+        // Bruk generisk feilmelding
+      }
+      throw new Error(`Feil ved opprettelse av betaling: ${message}`);
     }
+
+    const data = (await res.json()) as CreatePaymentResponse;
 
     if (!data?.payment_url) {
       throw new Error("Ingen betalingslenke mottatt fra serveren");
     }
 
-    return data as CreatePaymentResponse;
+    return data;
   }, "Opprettelse av betaling");
 }

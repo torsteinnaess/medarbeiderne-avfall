@@ -83,11 +83,11 @@ export default function RegisterScreen() {
       }
 
       // With autoconfirm enabled, the user is now logged in.
-      // If they were in the order flow, continue to price screen.
+      // If they were in the order flow, continue to checkout.
       const hasOrderDraft =
         useOrderDraftStore.getState().pickupDetails !== null;
       if (hasOrderDraft) {
-        router.replace("/order/price");
+        router.replace("/order/checkout");
       } else {
         router.back();
       }

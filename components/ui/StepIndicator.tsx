@@ -1,12 +1,11 @@
-import { Text, XStack, YStack, View } from 'tamagui';
+import { Text, View, XStack, YStack } from "tamagui";
 
 const STEPS = [
-  { key: 1, label: 'Bilder' },
-  { key: 2, label: 'Analyse' },
-  { key: 3, label: 'Henting' },
-  { key: 4, label: 'Pris' },
-  { key: 5, label: 'Betaling' },
-  { key: 6, label: 'Bekreftelse' },
+  { key: 1, label: "Bilder" },
+  { key: 2, label: "Analyse" },
+  { key: 3, label: "Henting" },
+  { key: 4, label: "Betaling" },
+  { key: 5, label: "Bekreftelse" },
 ];
 
 interface StepIndicatorProps {
@@ -36,25 +35,21 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
                 alignItems="center"
                 justifyContent="center"
                 backgroundColor={
-                  isCompleted
-                    ? '$primary'
-                    : isActive
-                      ? '$primary'
-                      : '$border'
+                  isCompleted ? "$primary" : isActive ? "$primary" : "$border"
                 }
               >
                 <Text
                   fontSize={12}
                   fontWeight="700"
-                  color={isCompleted || isActive ? '#FFFFFF' : '$textMuted'}
+                  color={isCompleted || isActive ? "#FFFFFF" : "$textMuted"}
                 >
-                  {isCompleted ? '✓' : step.key}
+                  {isCompleted ? "✓" : step.key}
                 </Text>
               </View>
               <Text
                 fontSize={10}
-                color={isActive ? '$primary' : '$textMuted'}
-                fontWeight={isActive ? '600' : '400'}
+                color={isActive ? "$primary" : "$textMuted"}
+                fontWeight={isActive ? "600" : "400"}
               >
                 {step.label}
               </Text>
@@ -64,7 +59,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
               <View
                 height={2}
                 width={16}
-                backgroundColor={isCompleted ? '$primary' : '$border'}
+                backgroundColor={isCompleted ? "$primary" : "$border"}
                 marginBottom="$lg"
               />
             )}
@@ -74,4 +69,3 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
     </XStack>
   );
 }
-

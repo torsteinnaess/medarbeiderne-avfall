@@ -61,11 +61,11 @@ export default function LoginScreen() {
       if (authError) {
         setError(translateAuthError(authError.message));
       } else {
-        // Login succeeded — if in order flow, continue to price screen
+        // Login succeeded — if in order flow, continue to checkout
         const hasOrderDraft =
           useOrderDraftStore.getState().pickupDetails !== null;
         if (hasOrderDraft) {
-          router.replace("/order/price");
+          router.replace("/order/checkout");
         } else {
           router.replace("/");
         }

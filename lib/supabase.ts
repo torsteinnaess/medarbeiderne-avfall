@@ -21,9 +21,9 @@ const storage =
     ? undefined // Supabase defaults to localStorage on web
     : ExpoSecureStoreAdapter;
 
-const supabaseUrl =
+export const supabaseUrl =
   process.env.EXPO_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseAnonKey =
+export const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
 
 if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {

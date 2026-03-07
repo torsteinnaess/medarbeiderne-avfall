@@ -14,6 +14,9 @@ const QUICKPAY_API_URL = "https://api.quickpay.net";
 
 interface CreatePaymentRequest {
   order_id: string;
+  payment_method?: string;
+  continue_url?: string;
+  cancel_url?: string;
 }
 
 // Hjelpefunksjon for Quickpay API-kall
@@ -66,10 +69,11 @@ serve(async (req: Request) => {
         global: { headers: { Authorization: authHeader } },
       },
     );
+    const token = authHeader.replace("Bearer ", "");
     const {
       data: { user },
       error: authError,
-    } = await userClient.auth.getUser();
+    } = await userClient.auth.getUser(token);
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Ugyldig autentisering" }), {
         status: 401,
@@ -77,7 +81,12 @@ serve(async (req: Request) => {
       });
     }
 
-    const { order_id } = (await req.json()) as CreatePaymentRequest;
+    const {
+      order_id,
+      payment_method: clientPaymentMethod,
+      continue_url: clientContinueUrl,
+      cancel_url: clientCancelUrl,
+    } = (await req.json()) as CreatePaymentRequest;
     if (!order_id) {
       return new Response(JSON.stringify({ error: "order_id er påkrevd" }), {
         status: 400,
@@ -144,9 +153,12 @@ serve(async (req: Request) => {
     // Callback URL — Supabase Edge Function
     const callbackUrl = `${supabaseUrl}/functions/v1/quickpay-callback`;
 
-    // Continue/cancel URLs — dyp lenke tilbake til appen
-    const continueUrl = `avfallhenting://order/confirmation?order_id=${order_id}`;
-    const cancelUrl = `avfallhenting://order/checkout?order_id=${order_id}`;
+    // Continue/cancel URLs — bruk URL-er fra klienten, eller fall tilbake til dyp lenke
+    const continueUrl =
+      clientContinueUrl ??
+      `avfallhenting://order/confirmation?order_id=${order_id}`;
+    const cancelUrl =
+      clientCancelUrl ?? `avfallhenting://order/checkout?order_id=${order_id}`;
 
     const linkRes = await quickpayRequest(
       `/payments/${quickpayPaymentId}/link`,
@@ -159,7 +171,8 @@ serve(async (req: Request) => {
         callback_url: callbackUrl,
         language: "no",
         auto_capture: true,
-        payment_methods: "creditcard",
+        payment_methods:
+          clientPaymentMethod || "creditcard,vipps,apple-pay,google-pay",
       },
     );
 

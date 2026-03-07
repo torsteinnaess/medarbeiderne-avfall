@@ -1,11 +1,31 @@
-import { Button, StepIndicator } from "@/components/ui";
+import { Button, Card, StepIndicator } from "@/components/ui";
 import { useOrder } from "@/lib/api/hooks";
 import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Spinner, Text, View, YStack } from "tamagui";
+import {
+    Separator,
+    Spinner,
+    Text,
+    View,
+    XStack,
+    YStack
+} from "tamagui";
+
+function formatKr(amount: number): string {
+  return `kr ${amount.toLocaleString("nb-NO", { minimumFractionDigits: 0 })},-`;
+}
+
+function formatDateDisplay(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("nb-NO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default function ConfirmationScreen() {
   const router = useRouter();
@@ -32,7 +52,7 @@ export default function ConfirmationScreen() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
-      <StepIndicator currentStep={6} />
+      <StepIndicator currentStep={5} />
       <YStack
         flex={1}
         padding="$xl"
@@ -84,6 +104,67 @@ export default function ConfirmationScreen() {
               Du vil motta bekreftelse på e-post.
             </Text>
           </>
+        )}
+
+        {order && (isPaid || !order_id) && (
+          <Card gap="$md" width="100%" marginTop="$md">
+            <Text fontSize={16} fontWeight="600" color="$textPrimary">
+              Ordredetaljer
+            </Text>
+
+            <XStack justifyContent="space-between">
+              <Text fontSize={14} color="$textSecondary">
+                Ordre-ID
+              </Text>
+              <Text fontSize={14} color="$textPrimary" fontFamily="$mono">
+                {order.id.substring(0, 8)}
+              </Text>
+            </XStack>
+
+            <XStack justifyContent="space-between">
+              <Text fontSize={14} color="$textSecondary">
+                Adresse
+              </Text>
+              <Text
+                fontSize={14}
+                color="$textPrimary"
+                textAlign="right"
+                flex={1}
+                marginLeft="$md"
+              >
+                {order.pickup_address}
+              </Text>
+            </XStack>
+
+            <XStack justifyContent="space-between">
+              <Text fontSize={14} color="$textSecondary">
+                Dato
+              </Text>
+              <Text fontSize={14} color="$textPrimary">
+                {formatDateDisplay(order.pickup_date)}
+              </Text>
+            </XStack>
+
+            <XStack justifyContent="space-between">
+              <Text fontSize={14} color="$textSecondary">
+                Tidspunkt
+              </Text>
+              <Text fontSize={14} color="$textPrimary">
+                {order.pickup_time_window}
+              </Text>
+            </XStack>
+
+            <Separator marginVertical="$sm" />
+
+            <XStack justifyContent="space-between" alignItems="center">
+              <Text fontSize={16} fontWeight="700" color="$textPrimary">
+                Totalt
+              </Text>
+              <Text fontSize={18} fontWeight="700" color="$primary">
+                {formatKr(order.total_price)}
+              </Text>
+            </XStack>
+          </Card>
         )}
 
         <YStack gap="$md" width="100%" marginTop="$xl">

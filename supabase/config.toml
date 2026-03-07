@@ -1,0 +1,15 @@
+[functions.analyze-images]
+verify_jwt = false
+
+[functions.calculate-price]
+verify_jwt = false
+
+[functions.create-order]
+verify_jwt = false
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.quickpay-callback]
+verify_jwt = false
+

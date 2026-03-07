@@ -1,15 +1,25 @@
 // Bilde-API — opplasting, resize og signerte URLer for ordrebilder
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+import { Platform } from "react-native";
 import { supabase } from "../supabase";
 import { withNetworkError } from "../utils/network-error";
 
 const BUCKET = "order-images";
 const MAX_IMAGE_WIDTH = 1024;
 
-// Bygg FormData med lokal fil-URI (fungerer korrekt i React Native)
-function createFileFormData(uri: string, fileName: string): FormData {
-  const formData = new FormData();
+// Hent bilde-data som kan lastes opp til Supabase Storage
+// På web: fetch blob fra blob:-URL, på native: bruk FormData med fil-URI
+async function getUploadBody(
+  uri: string,
+  fileName: string,
+): Promise<Blob | FormData> {
+  if (Platform.OS === "web") {
+    // På web er URI en blob:-URL — hent selve blob-objektet
+    const response = await fetch(uri);
+    return await response.blob();
+  }
   // React Native aksepterer dette spesielle objektet som fil-referanse
+  const formData = new FormData();
   formData.append("", {
     uri,
     name: fileName,
@@ -51,16 +61,14 @@ export function uploadTempImages(
       const resizedUri = await resizeImage(uri);
       const path = `temp/${sessionId}/${Date.now()}-${i}.jpg`;
 
-      // Bruk FormData med fil-URI (React Natives eneste pålitelige upload-metode)
-      const formData = createFileFormData(resizedUri, `${Date.now()}-${i}.jpg`);
+      const body = await getUploadBody(resizedUri, `${Date.now()}-${i}.jpg`);
 
       console.log("[Images] Laster opp til:", path);
 
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, formData, {
-          upsert: false,
-        });
+      const { error } = await supabase.storage.from(BUCKET).upload(path, body, {
+        contentType: "image/jpeg",
+        upsert: false,
+      });
 
       if (error) {
         throw new Error(
@@ -139,13 +147,12 @@ export function uploadImages(
       const uri = imageUris[i];
       const path = `${userId}/${timestamp}-${i}.jpg`;
 
-      const formData = createFileFormData(uri, `${timestamp}-${i}.jpg`);
+      const body = await getUploadBody(uri, `${timestamp}-${i}.jpg`);
 
-      const { error } = await supabase.storage
-        .from(BUCKET)
-        .upload(path, formData, {
-          upsert: false,
-        });
+      const { error } = await supabase.storage.from(BUCKET).upload(path, body, {
+        contentType: "image/jpeg",
+        upsert: false,
+      });
 
       if (error) {
         throw new Error(

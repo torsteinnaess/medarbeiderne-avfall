@@ -177,7 +177,7 @@ export default function HomeScreen() {
               <H2 color="$textPrimary" fontFamily="$heading" textAlign="center">
                 Slik fungerer det
               </H2>
-              <YStack gap="$lg" $md={{ flexDirection: "row", gap: "$xl" }}>
+              <XStack gap="$xl" justifyContent="center">
                 {STEPS.map((step, index) => (
                   <YStack key={index} flex={1} alignItems="center" gap="$md">
                     <View
@@ -203,18 +203,9 @@ export default function HomeScreen() {
                         {step.description}
                       </Text>
                     </YStack>
-                    {index < STEPS.length - 1 && (
-                      <View height={24} $md={{ display: "none" }}>
-                        <Ionicons
-                          name="chevron-down"
-                          size={20}
-                          color={colors.textMuted}
-                        />
-                      </View>
-                    )}
                   </YStack>
                 ))}
-              </YStack>
+              </XStack>
             </YStack>
           </Section>
         </View>

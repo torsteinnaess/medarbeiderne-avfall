@@ -1,12 +1,12 @@
 import {
-  AddressAutocomplete,
-  Button,
-  DatePicker,
-  FormField,
-  StepIndicator,
-  TextArea,
-  Toggle,
-  ToggleChipGroup,
+    AddressAutocomplete,
+    Button,
+    DatePicker,
+    FormField,
+    StepIndicator,
+    TextArea,
+    Toggle,
+    ToggleChipGroup,
 } from "@/components/ui";
 import { useLastPickupDetails } from "@/lib/api/hooks";
 import { useAuthStore } from "@/lib/stores/auth";
@@ -121,7 +121,7 @@ export default function PickupDetailsScreen() {
       return;
     }
 
-    router.push("/order/price");
+    router.push("/order/checkout");
   };
 
   return (

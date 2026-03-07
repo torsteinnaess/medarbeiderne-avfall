@@ -1,5 +1,6 @@
 // Ordre-API — rene async-funksjoner for ordrehåndtering
-import { supabase } from "../supabase";
+import { useAuthStore } from "../stores/auth";
+import { supabase, supabaseAnonKey, supabaseUrl } from "../supabase";
 import type {
     AnalyzedItem,
     Order,
@@ -49,40 +50,37 @@ export function fetchOrder(id: string): Promise<Order> {
 }
 
 // Opprett ny ordre via Edge Function
+// Bruker raw fetch i stedet for supabase.functions.invoke fordi
+// invoke-klienten kaller getSession() internt, som henger på native (SecureStore).
 export function createOrder(draft: CreateOrderInput): Promise<Order> {
   return withNetworkError(async () => {
-    // Forny sesjon for å sikre at JWT ikke er utløpt
-    const {
-      data: { session },
-    } = await supabase.auth.refreshSession();
-    if (!session?.access_token) {
+    const accessToken = useAuthStore.getState().session?.access_token;
+    if (!accessToken) {
       throw new Error("Du må være innlogget for å opprette en bestilling");
     }
 
-    const { data, error } = await supabase.functions.invoke("create-order", {
-      body: draft,
+    const res = await fetch(`${supabaseUrl}/functions/v1/create-order`, {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        apikey: supabaseAnonKey,
       },
+      body: JSON.stringify(draft),
     });
 
-    if (error) {
-      // Forsøk å hente detaljert feilmelding fra responsen
-      let message = error.message;
-      if (error.context && typeof error.context.json === "function") {
-        try {
-          const body = await error.context.json();
-          if (body?.error) {
-            message = body.error;
-          }
-        } catch {
-          // Bruk generisk feilmelding
-        }
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`;
+      try {
+        const body = await res.json();
+        if (body?.error) message = body.error;
+      } catch {
+        // Bruk generisk feilmelding
       }
       throw new Error(`Feil ved oppretting av ordre: ${message}`);
     }
 
-    return data as Order;
+    return (await res.json()) as Order;
   }, "Oppretting av ordre");
 }
 
