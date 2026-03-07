@@ -1,11 +1,11 @@
 // Ordre-API — rene async-funksjoner for ordrehåndtering
-import { supabase } from '../supabase';
+import { supabase } from "../supabase";
 import type {
-  Order,
-  AnalyzedItem,
-  PickupDetails,
-  PriceBreakdown,
-} from '../types';
+    AnalyzedItem,
+    Order,
+    PickupDetails,
+    PriceBreakdown,
+} from "../types";
 
 interface CreateOrderInput {
   items: AnalyzedItem[];
@@ -17,9 +17,9 @@ interface CreateOrderInput {
 // Hent alle ordrer for innlogget bruker (med varer og bilder)
 export async function fetchOrders(): Promise<Order[]> {
   const { data, error } = await supabase
-    .from('orders')
-    .select('*, items:order_items(*), images:order_images(*)')
-    .order('created_at', { ascending: false });
+    .from("orders")
+    .select("*, items:order_items(*), images:order_images(*)")
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`Feil ved henting av ordrer: ${error.message}`);
@@ -31,9 +31,9 @@ export async function fetchOrders(): Promise<Order[]> {
 // Hent én ordre med ID (med varer og bilder)
 export async function fetchOrder(id: string): Promise<Order> {
   const { data, error } = await supabase
-    .from('orders')
-    .select('*, items:order_items(*), images:order_images(*)')
-    .eq('id', id)
+    .from("orders")
+    .select("*, items:order_items(*), images:order_images(*)")
+    .eq("id", id)
     .single();
 
   if (error) {
@@ -45,12 +45,35 @@ export async function fetchOrder(id: string): Promise<Order> {
 
 // Opprett ny ordre via Edge Function
 export async function createOrder(draft: CreateOrderInput): Promise<Order> {
-  const { data, error } = await supabase.functions.invoke('create-order', {
+  // Hent sesjon eksplisitt for å sikre at JWT sendes med
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error("Du må være innlogget for å opprette en bestilling");
+  }
+
+  const { data, error } = await supabase.functions.invoke("create-order", {
     body: draft,
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
   });
 
   if (error) {
-    throw new Error(`Feil ved oppretting av ordre: ${error.message}`);
+    // Forsøk å hente detaljert feilmelding fra responsen
+    let message = error.message;
+    if (error.context && typeof error.context.json === "function") {
+      try {
+        const body = await error.context.json();
+        if (body?.error) {
+          message = body.error;
+        }
+      } catch {
+        // Bruk generisk feilmelding
+      }
+    }
+    throw new Error(`Feil ved oppretting av ordre: ${message}`);
   }
 
   return data as Order;
@@ -59,12 +82,11 @@ export async function createOrder(draft: CreateOrderInput): Promise<Order> {
 // Kanseller en ordre
 export async function cancelOrder(id: string): Promise<void> {
   const { error } = await supabase
-    .from('orders')
-    .update({ status: 'cancelled' })
-    .eq('id', id);
+    .from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", id);
 
   if (error) {
     throw new Error(`Feil ved kansellering av ordre: ${error.message}`);
   }
 }
-

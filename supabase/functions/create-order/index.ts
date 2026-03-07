@@ -62,11 +62,18 @@ interface PickupDetails {
   notes: string;
 }
 
+interface CustomerDetails {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 interface CreateOrderRequest {
   items: AnalyzedItem[];
   pickup_details: PickupDetails;
   image_storage_paths: string[];
   price_breakdown: PriceBreakdown;
+  customer_details: CustomerDetails;
 }
 
 const corsHeaders = {

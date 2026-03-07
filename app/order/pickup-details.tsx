@@ -1,9 +1,12 @@
 import {
+    AddressAutocomplete,
     Button,
+    DatePicker,
     FormField,
     Input,
     StepIndicator,
     TextArea,
+    ToggleChipGroup,
 } from "@/components/ui";
 import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import type { CarryDistance, PickupDetails, TimeWindow } from "@/lib/types";
@@ -36,20 +39,13 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-function formatDateDisplay(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("nb-NO", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 export default function PickupDetailsScreen() {
   const router = useRouter();
   const { pickupDetails, setPickupDetails } = useOrderDraftStore();
 
   const [address, setAddress] = useState(pickupDetails?.address ?? "");
+  const [lat, setLat] = useState(pickupDetails?.lat ?? 0);
+  const [lng, setLng] = useState(pickupDetails?.lng ?? 0);
   const [floor, setFloor] = useState(String(pickupDetails?.floor ?? 1));
   const [hasElevator, setHasElevator] = useState(
     pickupDetails?.has_elevator ?? false,
@@ -75,8 +71,8 @@ export default function PickupDetailsScreen() {
   const handleNext = () => {
     const details: PickupDetails = {
       address: address.trim(),
-      lat: 0,
-      lng: 0,
+      lat,
+      lng,
       floor: parseInt(floor, 10) || 0,
       has_elevator: hasElevator,
       has_parking: hasParking,
@@ -96,10 +92,14 @@ export default function PickupDetailsScreen() {
         <H2 color="$textPrimary">Hentedetaljer</H2>
 
         <FormField label="Adresse">
-          <Input
+          <AddressAutocomplete
             value={address}
-            onChangeText={setAddress}
-            placeholder="Gateadresse, postnummer, sted"
+            onSelect={(result) => {
+              setAddress(result.address);
+              setLat(result.lat);
+              setLng(result.lng);
+            }}
+            placeholder="Søk etter adresse..."
           />
         </FormField>
 
@@ -141,49 +141,29 @@ export default function PickupDetailsScreen() {
         </XStack>
 
         <FormField label="Bæreavstand">
-          <XStack gap="$sm" flexWrap="wrap">
-            {CARRY_DISTANCES.map((d) => (
-              <Button
-                key={d}
-                variant={carryDistance === d ? "primary" : "outline"}
-                size="sm"
-                onPress={() => setCarryDistance(d)}
-              >
-                {CARRY_DISTANCE_LABELS[d]}
-              </Button>
-            ))}
-          </XStack>
+          <ToggleChipGroup
+            options={CARRY_DISTANCES}
+            labels={CARRY_DISTANCE_LABELS}
+            value={carryDistance}
+            onChange={setCarryDistance}
+          />
         </FormField>
 
         <FormField label="Hentedato">
-          <Input
-            value={formatDate(pickupDate)}
-            onChangeText={(text: string) => {
-              const parsed = new Date(text);
-              if (!isNaN(parsed.getTime()) && parsed >= getTomorrow()) {
-                setPickupDate(parsed);
-              }
-            }}
-            placeholder="ÅÅÅÅ-MM-DD"
+          <DatePicker
+            value={pickupDate}
+            onChange={setPickupDate}
+            minimumDate={getTomorrow()}
           />
-          <Text fontSize={12} color="$textMuted">
-            Tidligst {formatDateDisplay(formatDate(getTomorrow()))}
-          </Text>
         </FormField>
 
         <FormField label="Tidspunkt">
-          <XStack gap="$sm" flexWrap="wrap">
-            {TIME_WINDOWS.map((tw) => (
-              <Button
-                key={tw}
-                variant={timeWindow === tw ? "primary" : "outline"}
-                size="sm"
-                onPress={() => setTimeWindow(tw)}
-              >
-                {TIME_WINDOW_LABELS[tw]}
-              </Button>
-            ))}
-          </XStack>
+          <ToggleChipGroup
+            options={TIME_WINDOWS}
+            labels={TIME_WINDOW_LABELS}
+            value={timeWindow}
+            onChange={setTimeWindow}
+          />
         </FormField>
 
         <FormField label="Merknader (valgfritt)">
