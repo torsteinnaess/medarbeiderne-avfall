@@ -1,12 +1,12 @@
-import { Pressable } from "react-native";
-import { Text, XStack, YStack } from "tamagui";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
-import { useEffect } from "react";
 import { colors } from "@/lib/theme";
+import { useEffect } from "react";
+import { Pressable } from "react-native";
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
+import { Text, XStack, YStack } from "tamagui";
 
 interface ToggleProps {
   checked: boolean;
@@ -33,7 +33,12 @@ export function Toggle({ checked, onCheckedChange, label }: ToggleProps) {
 
   return (
     <XStack justifyContent="space-between" alignItems="center">
-      <Text fontSize={14} fontWeight="500" color="$textPrimary" fontFamily="$body">
+      <Text
+        fontSize={14}
+        fontWeight="500"
+        color="$textPrimary"
+        fontFamily="$body"
+      >
         {label}
       </Text>
       <Pressable
@@ -45,7 +50,7 @@ export function Toggle({ checked, onCheckedChange, label }: ToggleProps) {
           width={TRACK_WIDTH}
           height={TRACK_HEIGHT}
           borderRadius={TRACK_HEIGHT / 2}
-          backgroundColor={checked ? colors.primary : colors.border}
+          backgroundColor={checked ? colors.primary : colors.textMuted}
           justifyContent="center"
           paddingHorizontal={THUMB_MARGIN}
         >
@@ -70,4 +75,3 @@ export function Toggle({ checked, onCheckedChange, label }: ToggleProps) {
     </XStack>
   );
 }
-

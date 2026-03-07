@@ -1,29 +1,10 @@
-import { getButtonSized } from "@tamagui/get-button-sized";
-import type { SizeTokens } from "tamagui";
-import { getTokenValue, styled, Button as TamaguiButton, Text } from "tamagui";
-
-const customSizes: Record<string, object> = {
-  sm: {
-    height: 36,
-    paddingHorizontal: "$lg",
-    fontSize: 14,
-  },
-  md: {
-    height: 48,
-    paddingHorizontal: "$xl",
-    fontSize: 16,
-  },
-  lg: {
-    height: 56,
-    paddingHorizontal: "$2xl",
-    fontSize: 18,
-  },
-};
+import { styled, Button as TamaguiButton, Text } from "tamagui";
 
 export const Button = styled(TamaguiButton, {
   borderRadius: "$md",
   paddingHorizontal: "$xl",
-  paddingVertical: "$lg",
+  fontFamily: "$body",
+  fontWeight: "600",
   pressStyle: { opacity: 0.85, scale: 0.98 },
 
   variants: {
@@ -52,14 +33,20 @@ export const Button = styled(TamaguiButton, {
       },
     },
     size: {
-      "...size": (val: SizeTokens, extras: Record<string, unknown>) => {
-        const key = String(val).replace("$", "");
-        if (key in customSizes) {
-          return customSizes[key];
-        }
-        const buttonStyle = getButtonSized(val, extras);
-        const gap = getTokenValue(val);
-        return { ...buttonStyle, gap };
+      sm: {
+        height: 36,
+        paddingHorizontal: "$lg",
+        fontSize: 14,
+      },
+      md: {
+        height: 48,
+        paddingHorizontal: "$xl",
+        fontSize: 16,
+      },
+      lg: {
+        height: 56,
+        paddingHorizontal: "$2xl",
+        fontSize: 18,
       },
     },
     fullWidth: {

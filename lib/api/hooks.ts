@@ -4,14 +4,30 @@ import type {
     AnalysisResult,
     AnalyzedItem,
     Order,
+    OrderStatus,
     PickupDetails,
     PriceBreakdown,
     PriceRequest,
     Profile,
 } from "../types";
+import {
+    type AdminStats,
+    type AdminUserWithOrderCount,
+    fetchAdminStats,
+    fetchAllOrders,
+    fetchAllUsers,
+    updateOrderStatus,
+} from "./admin";
 import { analyzeImages } from "./analysis";
 import { uploadImages } from "./images";
-import { cancelOrder, createOrder, fetchOrder, fetchOrders } from "./orders";
+import {
+    cancelOrder,
+    createOrder,
+    fetchLastPickupDetails,
+    fetchOrder,
+    fetchOrders,
+} from "./orders";
+import { type CreatePaymentResponse, createPayment } from "./payments";
 import { calculatePrice } from "./pricing";
 import { fetchProfile, updateProfile } from "./profile";
 
@@ -63,14 +79,27 @@ export function useCancelOrder() {
   });
 }
 
+export function useLastPickupDetails() {
+  return useQuery<PickupDetails | null>({
+    queryKey: ["lastPickupDetails"],
+    queryFn: fetchLastPickupDetails,
+  });
+}
+
+// --- Betaling ---
+
+export function useCreatePayment() {
+  return useMutation<CreatePaymentResponse, Error, string>({
+    mutationFn: createPayment,
+  });
+}
+
 // --- Bilder ---
 
 export function useUploadImages() {
-  return useMutation<string[], Error, { imageUris: string[]; userId?: string }>(
-    {
-      mutationFn: ({ imageUris, userId }) => uploadImages(imageUris, userId),
-    },
-  );
+  return useMutation<string[], Error, { imageUris: string[]; userId: string }>({
+    mutationFn: ({ imageUris, userId }) => uploadImages(imageUris, userId),
+  });
 }
 
 // --- Analyse ---
@@ -112,6 +141,41 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({
         queryKey: ["profile", variables.userId],
       });
+    },
+  });
+}
+
+// --- Admin ---
+
+export function useAdminStats() {
+  return useQuery<AdminStats>({
+    queryKey: ["admin", "stats"],
+    queryFn: fetchAdminStats,
+  });
+}
+
+export function useAdminOrders(statusFilter?: OrderStatus) {
+  return useQuery<Order[]>({
+    queryKey: ["admin", "orders", statusFilter],
+    queryFn: () => fetchAllOrders(statusFilter),
+  });
+}
+
+export function useAdminUsers() {
+  return useQuery<AdminUserWithOrderCount[]>({
+    queryKey: ["admin", "users"],
+    queryFn: fetchAllUsers,
+  });
+}
+
+export function useUpdateOrderStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Order, Error, { orderId: string; status: OrderStatus }>({
+    mutationFn: ({ orderId, status }) => updateOrderStatus(orderId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
   });
 }

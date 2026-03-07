@@ -1,19 +1,33 @@
 import {
-    AddressAutocomplete,
-    Button,
-    DatePicker,
-    FormField,
-    Input,
-    StepIndicator,
-    TextArea,
-    ToggleChipGroup,
+  AddressAutocomplete,
+  Button,
+  DatePicker,
+  FormField,
+  StepIndicator,
+  TextArea,
+  Toggle,
+  ToggleChipGroup,
 } from "@/components/ui";
+import { useLastPickupDetails } from "@/lib/api/hooks";
+import { useAuthStore } from "@/lib/stores/auth";
 import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import type { CarryDistance, PickupDetails, TimeWindow } from "@/lib/types";
 import { CARRY_DISTANCES, TIME_WINDOWS } from "@/lib/types";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { H2, ScrollView, Switch, Text, XStack, YStack } from "tamagui";
+import { useEffect, useRef, useState } from "react";
+import { H2, ScrollView, YStack } from "tamagui";
+
+const FLOOR_OPTIONS = ["0", "1", "2", "3", "4", "5", "6", "7+"] as const;
+const FLOOR_LABELS: Record<string, string> = {
+  "0": "Kjeller/1.",
+  "1": "1. etg",
+  "2": "2. etg",
+  "3": "3. etg",
+  "4": "4. etg",
+  "5": "5. etg",
+  "6": "6. etg",
+  "7+": "7+ etg",
+};
 
 const CARRY_DISTANCE_LABELS: Record<CarryDistance, string> = {
   "0-10m": "0-10m",
@@ -42,6 +56,9 @@ function formatDate(date: Date): string {
 export default function PickupDetailsScreen() {
   const router = useRouter();
   const { pickupDetails, setPickupDetails } = useOrderDraftStore();
+  const session = useAuthStore((s) => s.session);
+  const { data: lastPickup } = useLastPickupDetails();
+  const hasAppliedLastPickup = useRef(false);
 
   const [address, setAddress] = useState(pickupDetails?.address ?? "");
   const [lat, setLat] = useState(pickupDetails?.lat ?? 0);
@@ -66,6 +83,22 @@ export default function PickupDetailsScreen() {
   );
   const [notes, setNotes] = useState(pickupDetails?.notes ?? "");
 
+  // Pre-fill from last order if user hasn't already filled in details
+  useEffect(() => {
+    if (lastPickup && !pickupDetails && !hasAppliedLastPickup.current) {
+      hasAppliedLastPickup.current = true;
+      setAddress(lastPickup.address);
+      setLat(lastPickup.lat);
+      setLng(lastPickup.lng);
+      setFloor(String(lastPickup.floor));
+      setHasElevator(lastPickup.has_elevator);
+      setHasParking(lastPickup.has_parking);
+      setCarryDistance(lastPickup.carry_distance);
+      setTimeWindow(lastPickup.pickup_time_window);
+      setNotes(lastPickup.notes);
+    }
+  }, [lastPickup, pickupDetails]);
+
   const canProceed = address.trim().length > 0;
 
   const handleNext = () => {
@@ -82,13 +115,23 @@ export default function PickupDetailsScreen() {
       notes: notes.trim(),
     };
     setPickupDetails(details);
+
+    if (!session) {
+      router.push("/(auth)/login");
+      return;
+    }
+
     router.push("/order/price");
   };
 
   return (
     <YStack flex={1} backgroundColor="$background">
       <StepIndicator currentStep={3} />
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 20 }}>
+      <ScrollView
+        flex={1}
+        contentContainerStyle={{ padding: 24, gap: 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <H2 color="$textPrimary">Hentedetaljer</H2>
 
         <FormField label="Adresse">
@@ -104,41 +147,25 @@ export default function PickupDetailsScreen() {
         </FormField>
 
         <FormField label="Etasje">
-          <Input
+          <ToggleChipGroup
+            options={[...FLOOR_OPTIONS]}
+            labels={FLOOR_LABELS}
             value={floor}
-            onChangeText={setFloor}
-            keyboardType="numeric"
-            placeholder="0"
+            onChange={setFloor}
           />
         </FormField>
 
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize={14} fontWeight="500" color="$textPrimary">
-            Har heis?
-          </Text>
-          <Switch
-            size="$3"
-            checked={hasElevator}
-            onCheckedChange={setHasElevator}
-            backgroundColor={hasElevator ? "$primary" : "$border"}
-          >
-            <Switch.Thumb />
-          </Switch>
-        </XStack>
+        <Toggle
+          label="Har heis?"
+          checked={hasElevator}
+          onCheckedChange={setHasElevator}
+        />
 
-        <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize={14} fontWeight="500" color="$textPrimary">
-            Parkering tilgjengelig?
-          </Text>
-          <Switch
-            size="$3"
-            checked={hasParking}
-            onCheckedChange={setHasParking}
-            backgroundColor={hasParking ? "$primary" : "$border"}
-          >
-            <Switch.Thumb />
-          </Switch>
-        </XStack>
+        <Toggle
+          label="Parkering tilgjengelig?"
+          checked={hasParking}
+          onCheckedChange={setHasParking}
+        />
 
         <FormField label="Bæreavstand">
           <ToggleChipGroup

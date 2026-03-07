@@ -3,6 +3,7 @@ import {
     DefaultTheme,
     ThemeProvider,
 } from "@react-navigation/native";
+import "@tamagui/native/setup-zeego";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -17,6 +18,7 @@ import "@tamagui/font-inter/css/600.css";
 import "@tamagui/font-inter/css/700.css";
 import "@tamagui/font-inter/css/800.css";
 
+import { ToastContainer } from "@/components/ui";
 import { useColorScheme } from "@/components/useColorScheme";
 import config from "@/config/tamagui.config";
 import { AuthProvider } from "@/lib/providers/auth-provider";
@@ -80,6 +82,7 @@ function RootLayoutNav() {
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(admin)" options={{ headerShown: false }} />
               <Stack.Screen
                 name="order"
                 options={{
@@ -94,7 +97,15 @@ function RootLayoutNav() {
                   headerBackTitle: "Tilbake",
                 }}
               />
+              <Stack.Screen
+                name="admin/order/[id]"
+                options={{
+                  title: "Admin — Ordredetaljer",
+                  headerBackTitle: "Tilbake",
+                }}
+              />
             </Stack>
+            <ToastContainer />
           </ThemeProvider>
         </AuthProvider>
       </QueryProvider>

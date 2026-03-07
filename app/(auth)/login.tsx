@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/Button";
 import { FormField, Input } from "@/components/ui/Input";
+import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { supabase } from "@/lib/supabase";
 import { colors } from "@/lib/theme";
+import {
+    getUserFriendlyErrorMessage,
+    isNetworkError,
+} from "@/lib/utils/network-error";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -47,16 +52,33 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    setIsLoading(false);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    if (authError) {
-      setError(translateAuthError(authError.message));
+      if (authError) {
+        setError(translateAuthError(authError.message));
+      } else {
+        // Login succeeded — if in order flow, continue to price screen
+        const hasOrderDraft =
+          useOrderDraftStore.getState().pickupDetails !== null;
+        if (hasOrderDraft) {
+          router.replace("/order/price");
+        } else {
+          router.replace("/");
+        }
+      }
+    } catch (error) {
+      if (isNetworkError(error)) {
+        setError(getUserFriendlyErrorMessage(error));
+      } else {
+        setError("Noe gikk galt. Prøv igjen.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    // On success, AuthProvider detects session change and redirect happens automatically
   };
 
   const handleSocialSignIn = (provider: "apple" | "google") => {
@@ -89,6 +111,27 @@ export default function LoginScreen() {
             width="100%"
             alignSelf="center"
           >
+            {/* Back button — only when navigated from another page */}
+            {router.canGoBack() && (
+              <XStack>
+                <Text
+                  color="$primary"
+                  fontSize={14}
+                  fontWeight="600"
+                  onPress={() => router.back()}
+                  pressStyle={{ opacity: 0.7 }}
+                  cursor="pointer"
+                >
+                  <Ionicons
+                    name="arrow-back"
+                    size={16}
+                    color={colors.primary}
+                  />{" "}
+                  Tilbake
+                </Text>
+              </XStack>
+            )}
+
             {/* Logo */}
             <YStack alignItems="center" gap="$lg">
               <View

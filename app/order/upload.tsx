@@ -6,7 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Platform, Pressable } from "react-native";
-import { H2, ScrollView, Text, View, XStack, YStack } from "tamagui";
+import { H2, ScrollView, Spinner, Text, View, XStack, YStack } from "tamagui";
 
 const MAX_IMAGES = 10;
 
@@ -85,6 +85,19 @@ export default function UploadScreen() {
     <YStack flex={1} backgroundColor="$background">
       <StepIndicator currentStep={1} />
       <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 16 }}>
+        <XStack>
+          <Text
+            color="$primary"
+            fontSize={14}
+            fontWeight="600"
+            onPress={() => router.back()}
+            pressStyle={{ opacity: 0.7 }}
+            cursor="pointer"
+          >
+            <Ionicons name="arrow-back" size={16} color={colors.primary} />{" "}
+            Tilbake
+          </Text>
+        </XStack>
         <H2 color="$textPrimary">Last opp bilder av avfallet</H2>
         <Text fontSize={14} color="$textSecondary">
           Ta eller velg bilder av gjenstandene du ønsker hentet. Minimum 1, maks{" "}
@@ -135,6 +148,20 @@ export default function UploadScreen() {
           <Text fontSize={13} color="$error">
             {error}
           </Text>
+        )}
+
+        {isLoading && (
+          <XStack
+            alignItems="center"
+            justifyContent="center"
+            gap="$sm"
+            paddingVertical="$md"
+          >
+            <Spinner size="small" color="$primary" />
+            <Text fontSize={14} color="$textSecondary">
+              Laster bilder...
+            </Text>
+          </XStack>
         )}
 
         <YStack gap="$md">

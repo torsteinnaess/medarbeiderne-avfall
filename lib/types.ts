@@ -91,11 +91,14 @@ export const TIME_WINDOWS = [
 export type TimeWindow = (typeof TIME_WINDOWS)[number];
 
 // --- Data Models ---
+export type UserRole = "user" | "admin";
+
 export interface Profile {
   id: string;
   name: string;
   email: string;
   phone: string;
+  role: UserRole;
   created_at: string;
 }
 
@@ -133,8 +136,10 @@ export interface Order {
   subtotal: number;
   surcharges: number;
   total_price: number;
-  payment_status: "pending" | "paid" | "refunded";
+  payment_status: "pending" | "authorized" | "paid" | "refunded";
   payment_reference: string | null;
+  quickpay_payment_id: number | null;
+  quickpay_payment_link: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];

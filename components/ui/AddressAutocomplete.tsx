@@ -1,8 +1,8 @@
+import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
-import { ActivityIndicator, Platform, Pressable } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable } from "react-native";
 import { Input, Text, XStack, YStack } from "tamagui";
-import { colors } from "@/lib/theme";
 
 interface AddressSuggestion {
   adressetekst: string;
@@ -59,14 +59,20 @@ export function AddressAutocomplete({
     setQuery(text);
     setShowSuggestions(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => searchAddresses(text), 300);
+    debounceRef.current = setTimeout(() => searchAddresses(text), 150);
   };
 
   const handleSelect = (suggestion: AddressSuggestion) => {
+    console.log(
+      "[AddressAutocomplete] handleSelect fired",
+      suggestion.adressetekst,
+    );
     const fullAddress = `${suggestion.adressetekst}, ${suggestion.postnummer} ${suggestion.poststed}`;
+    console.log("[AddressAutocomplete] setting query to:", fullAddress);
     setQuery(fullAddress);
     setShowSuggestions(false);
     setSuggestions([]);
+    Keyboard.dismiss();
     onSelect({
       address: fullAddress,
       lat: suggestion.representasjonspunkt?.lat ?? 0,
@@ -75,7 +81,7 @@ export function AddressAutocomplete({
   };
 
   return (
-    <YStack position="relative" zIndex={100}>
+    <YStack zIndex={100}>
       <XStack alignItems="center" position="relative">
         <Input
           flex={1}
@@ -102,7 +108,7 @@ export function AddressAutocomplete({
           top={0}
           bottom={0}
           alignItems="center"
-          pointerEvents="none"
+          style={{ pointerEvents: "none" }}
         >
           {isLoading ? (
             <ActivityIndicator size="small" color={colors.primary} />
@@ -114,22 +120,18 @@ export function AddressAutocomplete({
 
       {showSuggestions && suggestions.length > 0 && (
         <YStack
-          position="absolute"
-          top="100%"
-          left={0}
-          right={0}
           backgroundColor="$surface"
           borderWidth={1}
           borderColor="$border"
           borderRadius="$md"
           marginTop={4}
-          overflow="hidden"
           elevation={4}
-          {...(Platform.OS === "web" ? { style: { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" } } : {})}
-          zIndex={101}
         >
           {suggestions.map((s, i) => (
-            <Pressable key={`${s.adressetekst}-${i}`} onPress={() => handleSelect(s)}>
+            <Pressable
+              key={`${s.adressetekst}-${i}`}
+              onPress={() => handleSelect(s)}
+            >
               <XStack
                 paddingHorizontal="$lg"
                 paddingVertical="$md"
@@ -137,9 +139,12 @@ export function AddressAutocomplete({
                 alignItems="center"
                 borderBottomWidth={i < suggestions.length - 1 ? 1 : 0}
                 borderBottomColor="$border"
-                hoverStyle={{ backgroundColor: "$surfaceHover" }}
               >
-                <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+                <Ionicons
+                  name="location-outline"
+                  size={16}
+                  color={colors.textSecondary}
+                />
                 <YStack flex={1}>
                   <Text fontSize={14} color="$textPrimary" fontFamily="$body">
                     {s.adressetekst}
@@ -156,4 +161,3 @@ export function AddressAutocomplete({
     </YStack>
   );
 }
-

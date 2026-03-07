@@ -1,4 +1,3 @@
-import { Pressable } from "react-native";
 import { Text, XStack } from "tamagui";
 
 interface ToggleChipProps {
@@ -9,35 +8,32 @@ interface ToggleChipProps {
 
 export function ToggleChip({ label, selected, onPress }: ToggleChipProps) {
   return (
-    <Pressable onPress={onPress}>
-      <XStack
-        paddingHorizontal="$lg"
-        paddingVertical="$sm"
-        borderRadius="$full"
-        borderWidth={1.5}
-        borderColor={selected ? "$primary" : "$border"}
-        backgroundColor={selected ? "$primaryLight" : "$surface"}
-        alignItems="center"
-        justifyContent="center"
-        minHeight={38}
-        hoverStyle={{
-          borderColor: selected ? "$primary" : "$textMuted",
-        }}
-        pressStyle={{
-          opacity: 0.85,
-          scale: 0.97,
-        }}
+    <XStack
+      onPress={onPress}
+      paddingHorizontal="$lg"
+      paddingVertical="$sm"
+      borderRadius="$full"
+      borderWidth={1.5}
+      borderColor={selected ? "$primary" : "$border"}
+      backgroundColor={selected ? "$primaryLight" : "$surface"}
+      alignItems="center"
+      justifyContent="center"
+      minHeight={38}
+      cursor="pointer"
+      pressStyle={{
+        opacity: 0.85,
+        scale: 0.97,
+      }}
+    >
+      <Text
+        fontSize={14}
+        fontWeight={selected ? "600" : "400"}
+        color={selected ? "$primaryDark" : "$textSecondary"}
+        fontFamily="$body"
       >
-        <Text
-          fontSize={14}
-          fontWeight={selected ? "600" : "400"}
-          color={selected ? "$primaryDark" : "$textSecondary"}
-          fontFamily="$body"
-        >
-          {label}
-        </Text>
-      </XStack>
-    </Pressable>
+        {label}
+      </Text>
+    </XStack>
   );
 }
 
@@ -67,4 +63,3 @@ export function ToggleChipGroup<T extends string>({
     </XStack>
   );
 }
-

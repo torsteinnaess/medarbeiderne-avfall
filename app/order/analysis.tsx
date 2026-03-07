@@ -1,14 +1,15 @@
 import { Button, Card, Input, StepIndicator } from "@/components/ui";
 import { useAnalyzeImages } from "@/lib/api/hooks";
+import { getSignedUrls, uploadTempImages } from "@/lib/api/images";
 import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { colors } from "@/lib/theme";
 import type { AnalyzedItem, WasteCategory } from "@/lib/types";
 import { WASTE_CATEGORIES, WASTE_CATEGORY_LABELS } from "@/lib/types";
 import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable } from "react-native";
+import { Image, Pressable } from "react-native";
+
 import { H2, ScrollView, Spinner, Text, XStack, YStack } from "tamagui";
 
 function CategoryPicker({
@@ -86,59 +87,46 @@ function CategoryPicker({
 
 export default function AnalysisScreen() {
   const router = useRouter();
-  const { imageUris, analyzedItems, setAnalyzedItems, updateItem, removeItem } =
-    useOrderDraftStore();
+  const {
+    imageUris,
+    analyzedItems,
+    setAnalyzedItems,
+    setStoragePaths,
+    updateItem,
+    removeItem,
+  } = useOrderDraftStore();
 
   const analyzeMutation = useAnalyzeImages();
   const hasStarted = useRef(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const isLoading = analyzeMutation.isPending;
-
-  // Konverter lokal URI til base64 data URL som OpenAI kan lese direkte
-  const toBase64DataUrl = async (uri: string): Promise<string> => {
-    // Allerede en data URL (native kan gi dette)
-    if (uri.startsWith("data:")) return uri;
-
-    if (Platform.OS !== "web") {
-      // På native: bruk expo-file-system som fungerer pålitelig med lokale URIer
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      // Bestem MIME-type fra filendelse
-      const ext = uri.split(".").pop()?.toLowerCase() ?? "jpeg";
-      const mime = ext === "png" ? "image/png" : "image/jpeg";
-      return `data:${mime};base64,${base64}`;
-    }
-
-    // Web fallback: bruk fetch + FileReader
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  };
+  const isLoading = isUploading || analyzeMutation.isPending;
 
   const runAnalysis = async () => {
     setError(null);
+    setIsUploading(true);
     try {
-      // Konverter lokale URIer til base64 data URLs
-      // OpenAI Vision API aksepterer data:image/...;base64,... direkte
-      // Ingen Supabase Storage nødvendig — bilder lastes opp ved checkout
-      const base64Urls = await Promise.all(imageUris.map(toBase64DataUrl));
+      console.log("[Analysis] Starter analyse av", imageUris.length, "bilder");
 
+      // 1. Resize og last opp til temp-mappe i Supabase Storage
+      const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      console.log("[Analysis] Session ID:", sessionId);
+
+      const tempPaths = await uploadTempImages(imageUris, sessionId);
+      console.log("[Analysis] Lastet opp til temp:", tempPaths);
+      setStoragePaths(tempPaths);
+
+      // 2. Generer signerte URLer som Edge Function sender til OpenAI
+      const signedUrls = await getSignedUrls(tempPaths);
       console.log(
-        "[Analysis] Sender",
-        base64Urls.length,
-        "bilder, lengder:",
-        base64Urls.map((u) => u.length),
+        "[Analysis] Signerte URLer:",
+        signedUrls.map((u) => u.substring(0, 80)),
       );
 
-      const result = await analyzeMutation.mutateAsync(base64Urls);
+      // 3. Send URLer til Edge Function for analyse
+      const result = await analyzeMutation.mutateAsync(signedUrls);
 
       if (!result.items || result.items.length === 0) {
         console.warn(
@@ -154,8 +142,12 @@ export default function AnalysisScreen() {
       setAnalyzedItems(result.items);
     } catch (e) {
       const message = e instanceof Error ? e.message : "Ukjent feil";
+      const stack = e instanceof Error ? e.stack : undefined;
       setError(message);
       console.error("[Analysis] Error:", message);
+      if (stack) console.error("[Analysis] Stack:", stack);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -203,7 +195,9 @@ export default function AnalysisScreen() {
         <YStack flex={1} alignItems="center" justifyContent="center" gap="$lg">
           <Spinner size="large" color="$primary" />
           <Text fontSize={16} color="$textSecondary">
-            Analyserer bildene dine...
+            {isUploading && !analyzeMutation.isPending
+              ? "Laster opp bilder..."
+              : "Analyserer bildene dine..."}
           </Text>
         </YStack>
       </YStack>

@@ -22,6 +22,12 @@ const headingFont = createInterFont({
     6: 28,
     7: 34,
     8: 42,
+    // Named aliases so Tamagui can resolve font sizes for named size tokens
+    xs: 13,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 22,
   },
   weight: {
     4: "600",
@@ -44,6 +50,12 @@ const bodyFont = createInterFont({
     3: 16,
     4: 18,
     5: 20,
+    // Named aliases so Tamagui can resolve font sizes for named size tokens
+    xs: 13,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 20,
   },
   weight: {
     1: "400",
@@ -59,6 +71,17 @@ const bodyFont = createInterFont({
 
 const tokens = createTokens({
   ...defaultTokens,
+  size: {
+    ...defaultTokens.size,
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    "2xl": 32,
+    "3xl": 48,
+    "4xl": 64,
+  },
   color: {
     ...defaultTokens.color,
     // Brand colors

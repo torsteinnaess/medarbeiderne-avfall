@@ -38,7 +38,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (isInitialized) => set({ isInitialized }),
 
   signOut: async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("[AuthStore] signOut feilet:", error);
+      // Logg ut lokalt uansett — brukeren ønsker å logge ut
+    }
     set({
       session: null,
       user: null,

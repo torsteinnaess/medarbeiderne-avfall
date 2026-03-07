@@ -1,10 +1,14 @@
 import { Button, Card, StepIndicator } from "@/components/ui";
-import { useCreateOrder } from "@/lib/api/hooks";
+import { useCreateOrder, useCreatePayment } from "@/lib/api/hooks";
+import { moveTempImages } from "@/lib/api/images";
+import { useAuthStore } from "@/lib/stores/auth";
 import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
+import { Platform } from "react-native";
 import {
     H2,
     ScrollView,
@@ -30,43 +34,89 @@ function formatDateDisplay(dateStr: string): string {
 
 export default function CheckoutScreen() {
   const router = useRouter();
-  const { analyzedItems, storagePaths, pickupDetails, priceBreakdown, reset } =
-    useOrderDraftStore();
+  const {
+    analyzedItems,
+    storagePaths,
+    setStoragePaths,
+    pickupDetails,
+    priceBreakdown,
+    reset,
+  } = useOrderDraftStore();
 
   const createOrderMutation = useCreateOrder();
+  const createPaymentMutation = useCreatePayment();
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<
+    "idle" | "creating_order" | "creating_payment" | "opening_payment"
+  >("idle");
+
+  const userId = useAuthStore((s) => s.user?.id);
 
   const handleConfirm = async () => {
-    if (!pickupDetails || !priceBreakdown) return;
+    if (!pickupDetails || !priceBreakdown || !userId) return;
     setError(null);
+    setStep("creating_order");
 
-    createOrderMutation.mutate(
-      {
+    try {
+      // Flytt bilder fra temp/ til brukerens permanente mappe
+      let finalPaths = storagePaths;
+      const hasTempImages = storagePaths.some((p) => p.startsWith("temp/"));
+      if (hasTempImages) {
+        console.log("[Checkout] Flytter temp-bilder til brukermappe...");
+        finalPaths = await moveTempImages(storagePaths, userId);
+        setStoragePaths(finalPaths);
+        console.log("[Checkout] Nye paths:", finalPaths);
+      }
+
+      // Opprett ordre
+      const order = await createOrderMutation.mutateAsync({
         items: analyzedItems,
         pickup_details: pickupDetails,
-        image_storage_paths: storagePaths,
+        image_storage_paths: finalPaths,
         price_breakdown: priceBreakdown,
-      },
-      {
-        onSuccess: () => {
-          reset();
-          router.push("/order/confirmation");
-        },
-        onError: (err) => {
-          setError(err.message);
-        },
-      },
-    );
+      });
+
+      // Ordre opprettet — nå opprett betaling
+      setStep("creating_payment");
+      const paymentData = await createPaymentMutation.mutateAsync(order.id);
+
+      setStep("opening_payment");
+      reset();
+
+      if (Platform.OS === "web") {
+        // På web: åpne i nytt vindu/tab
+        window.open(paymentData.payment_url, "_self");
+      } else {
+        // På native: åpne i systemnettleser
+        await WebBrowser.openBrowserAsync(paymentData.payment_url);
+        // Bruker er tilbake fra nettleser — naviger til bekreftelse
+        router.push(`/order/confirmation?order_id=${order.id}`);
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Ukjent feil";
+      setStep("idle");
+      setError(message);
+      console.error("[Checkout] Error:", message);
+    }
   };
 
-  if (createOrderMutation.isPending) {
+  const isProcessing = step !== "idle";
+
+  const statusMessages: Record<typeof step, string> = {
+    idle: "",
+    creating_order: "Oppretter bestilling...",
+    creating_payment: "Forbereder betaling...",
+    opening_payment: "Åpner betalingsvindu...",
+  };
+
+  if (isProcessing) {
     return (
       <YStack flex={1} backgroundColor="$background">
         <StepIndicator currentStep={5} />
         <YStack flex={1} alignItems="center" justifyContent="center" gap="$lg">
           <Spinner size="large" color="$primary" />
           <Text fontSize={16} color="$textSecondary">
-            Oppretter bestilling...
+            {statusMessages[step]}
           </Text>
         </YStack>
       </YStack>
@@ -169,9 +219,9 @@ export default function CheckoutScreen() {
           size="lg"
           fullWidth
           onPress={handleConfirm}
-          disabled={!pickupDetails || !priceBreakdown}
+          disabled={!pickupDetails || !priceBreakdown || isProcessing}
         >
-          Bekreft bestilling
+          Bekreft og betal
         </Button>
         <Button
           variant="ghost"

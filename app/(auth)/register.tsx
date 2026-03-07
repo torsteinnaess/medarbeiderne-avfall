@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/Button";
 import { FormField, Input } from "@/components/ui/Input";
+import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { supabase } from "@/lib/supabase";
 import { colors } from "@/lib/theme";
+import {
+    getUserFriendlyErrorMessage,
+    isNetworkError,
+} from "@/lib/utils/network-error";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { H1, Text, XStack, YStack } from "tamagui";
 
@@ -51,6 +51,10 @@ export default function RegisterScreen() {
       setError("Vennligst fyll inn e-post");
       return;
     }
+    if (!phone.trim()) {
+      setError("Vennligst fyll inn telefonnummer");
+      return;
+    }
     if (password.length < 6) {
       setError("Passordet må være minst 6 tegn");
       return;
@@ -61,28 +65,41 @@ export default function RegisterScreen() {
     }
 
     setIsLoading(true);
-    const { error: authError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
-          name: name.trim(),
-          phone: phone.trim(),
+    try {
+      const { error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            phone: `+47${phone.trim()}`,
+          },
         },
-      },
-    });
-    setIsLoading(false);
+      });
 
-    if (authError) {
-      setError(translateAuthError(authError.message));
-      return;
+      if (authError) {
+        setError(translateAuthError(authError.message));
+        return;
+      }
+
+      // With autoconfirm enabled, the user is now logged in.
+      // If they were in the order flow, continue to price screen.
+      const hasOrderDraft =
+        useOrderDraftStore.getState().pickupDetails !== null;
+      if (hasOrderDraft) {
+        router.replace("/order/price");
+      } else {
+        router.back();
+      }
+    } catch (error) {
+      if (isNetworkError(error)) {
+        setError(getUserFriendlyErrorMessage(error));
+      } else {
+        setError("Noe gikk galt. Prøv igjen.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    Alert.alert(
-      "Konto opprettet",
-      "Sjekk e-posten din for å bekrefte kontoen.",
-      [{ text: "OK", onPress: () => router.back() }],
-    );
   };
 
   return (
@@ -104,20 +121,26 @@ export default function RegisterScreen() {
             width="100%"
             alignSelf="center"
           >
-            {/* Back button */}
-            <XStack>
-              <Text
-                color="$primary"
-                fontSize={14}
-                fontWeight="600"
-                onPress={() => router.back()}
-                pressStyle={{ opacity: 0.7 }}
-                cursor="pointer"
-              >
-                <Ionicons name="arrow-back" size={16} color={colors.primary} />{" "}
-                Tilbake
-              </Text>
-            </XStack>
+            {/* Back button — only when navigated from another page */}
+            {router.canGoBack() && (
+              <XStack>
+                <Text
+                  color="$primary"
+                  fontSize={14}
+                  fontWeight="600"
+                  onPress={() => router.back()}
+                  pressStyle={{ opacity: 0.7 }}
+                  cursor="pointer"
+                >
+                  <Ionicons
+                    name="arrow-back"
+                    size={16}
+                    color={colors.primary}
+                  />{" "}
+                  Tilbake
+                </Text>
+              </XStack>
+            )}
 
             {/* Header */}
             <YStack alignItems="center" gap="$sm">
@@ -136,7 +159,8 @@ export default function RegisterScreen() {
                   placeholder="Ditt fulle navn"
                   value={name}
                   onChangeText={setName}
-                  autoCapitalize="words"
+                  autoCapitalize="sentences"
+                  autoCorrect={false}
                 />
               </FormField>
 
@@ -151,13 +175,31 @@ export default function RegisterScreen() {
                 />
               </FormField>
 
-              <FormField label="Telefon (valgfritt)">
-                <Input
-                  placeholder="+47 000 00 000"
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                />
+              <FormField label="Telefon">
+                <XStack gap="$sm" alignItems="center">
+                  <XStack
+                    height={48}
+                    paddingHorizontal="$lg"
+                    borderWidth={1}
+                    borderColor="$border"
+                    borderRadius="$md"
+                    backgroundColor="$surface"
+                    alignItems="center"
+                    gap="$xs"
+                  >
+                    <Text fontSize={18}>🇳🇴</Text>
+                    <Text fontSize={16} color="$textPrimary" fontFamily="$body">
+                      +47
+                    </Text>
+                  </XStack>
+                  <Input
+                    flex={1}
+                    placeholder="000 00 000"
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                  />
+                </XStack>
               </FormField>
 
               <FormField label="Passord">

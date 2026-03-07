@@ -3,25 +3,31 @@ import { useAuthStore } from "@/lib/stores/auth";
 import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { Separator, Text, YStack } from "tamagui";
 
 export default function AccountScreen() {
   const router = useRouter();
   const { user, profile, signOut } = useAuthStore();
 
-  const handleSignOut = () => {
-    Alert.alert("Logg ut", "Er du sikker på at du vil logge ut?", [
-      { text: "Avbryt", style: "cancel" },
-      {
-        text: "Logg ut",
-        style: "destructive",
-        onPress: async () => {
-          await signOut();
-          router.replace("/(tabs)");
+  const handleSignOut = async () => {
+    if (Platform.OS === "web") {
+      if (!window.confirm("Er du sikker på at du vil logge ut?")) return;
+      await signOut();
+      router.replace("/(tabs)");
+    } else {
+      Alert.alert("Logg ut", "Er du sikker på at du vil logge ut?", [
+        { text: "Avbryt", style: "cancel" },
+        {
+          text: "Logg ut",
+          style: "destructive",
+          onPress: async () => {
+            await signOut();
+            router.replace("/(tabs)");
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   if (!user) {
@@ -65,6 +71,22 @@ export default function AccountScreen() {
         </Text>
       </YStack>
       {/* Profile management will be added by Stream 6 */}
+
+      {profile?.role === "admin" && (
+        <>
+          <Separator />
+          <Button
+            variant="secondary"
+            size="md"
+            fullWidth
+            onPress={() => router.push("/(admin)")}
+            icon={<Ionicons name="shield-outline" size={20} color="#FFFFFF" />}
+          >
+            Admin Dashboard
+          </Button>
+        </>
+      )}
+
       <Separator />
       <Button
         variant="destructive"

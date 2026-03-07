@@ -1,7 +1,5 @@
 import { Button, Card } from "@/components/ui";
 import { colors } from "@/lib/theme";
-import type { WasteCategory } from "@/lib/types";
-import { WASTE_CATEGORY_LABELS } from "@/lib/types";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -12,30 +10,14 @@ import { H1, H2, H3, Text, View, XStack, YStack } from "tamagui";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
 
-const CATEGORY_ICONS: Record<WasteCategory, IoniconsName> = {
-  fett_vegetabilske_oljer: "water-outline",
-  hageavfall: "leaf-outline",
-  treverk_ubehandlet: "construct-outline",
-  impregnert_treverk_cu: "construct-outline",
-  papp_papir: "document-outline",
-  glass_metallemballasje: "wine-outline",
-  isolerglassruter: "grid-outline",
-  jern_metall: "hardware-chip-outline",
-  ee_avfall: "laptop-outline",
-  gips: "cube-outline",
-  tunge_masser: "layers-outline",
-  blyholdig_avfall: "warning-outline",
-  blaasesand: "flask-outline",
-  impregnert_treverk_cca: "construct-outline",
-  isocyanat: "warning-outline",
-  uorg_syrer: "flask-outline",
-  rengjoringsmidler: "flask-outline",
-  klorparafin_isolerglassruter: "grid-outline",
-  gassbeholdere: "flame-outline",
-  gassflasker_propanflasker: "flame-outline",
-  brannslukkingsapparater: "shield-outline",
-  usortert_avfall: "trash-outline",
-};
+const HOMEPAGE_CATEGORIES: { icon: IoniconsName; label: string }[] = [
+  { icon: "leaf-outline", label: "Hageavfall" },
+  { icon: "construct-outline", label: "Treverk & bygg" },
+  { icon: "laptop-outline", label: "Elektronikk" },
+  { icon: "hardware-chip-outline", label: "Metall & jern" },
+  { icon: "document-outline", label: "Papir & papp" },
+  { icon: "trash-outline", label: "Restavfall" },
+];
 
 const STEPS = [
   {
@@ -166,14 +148,19 @@ export default function HomeScreen() {
                 fullWidth
                 backgroundColor="#FFFFFF"
                 borderColor="#FFFFFF"
+                color={colors.primaryDark}
                 onPress={() => router.push("/order/upload")}
               >
                 Bestill henting
               </Button>
-              <Button variant="ghost" size="md" onPress={scrollToHowItWorks}>
-                <Text fontWeight="600" fontSize={16} color="#FFFFFF">
-                  Se hvordan det fungerer ↓
-                </Text>
+              <Button
+                variant="ghost"
+                size="md"
+                fullWidth
+                color="#FFFFFF"
+                onPress={scrollToHowItWorks}
+              >
+                Se hvordan det fungerer ↓
               </Button>
             </YStack>
           </YStack>
@@ -239,16 +226,10 @@ export default function HomeScreen() {
               Hva vi henter
             </H2>
             <XStack flexWrap="wrap" gap="$md" justifyContent="center">
-              {(
-                Object.entries(WASTE_CATEGORY_LABELS) as [
-                  WasteCategory,
-                  string,
-                ][]
-              ).map(([key, label]) => (
+              {HOMEPAGE_CATEGORIES.map((cat) => (
                 <Card
-                  key={key}
-                  width="47%"
-                  $md={{ width: "22%" }}
+                  key={cat.label}
+                  width="30%"
                   alignItems="center"
                   padding="$lg"
                   gap="$sm"
@@ -263,7 +244,7 @@ export default function HomeScreen() {
                     justifyContent="center"
                   >
                     <Ionicons
-                      name={CATEGORY_ICONS[key]}
+                      name={cat.icon}
                       size={24}
                       color={colors.primary}
                     />
@@ -274,7 +255,7 @@ export default function HomeScreen() {
                     color="$textPrimary"
                     textAlign="center"
                   >
-                    {label}
+                    {cat.label}
                   </Text>
                 </Card>
               ))}
