@@ -1,5 +1,6 @@
 // TanStack Query hooks — bro mellom UI og API-laget
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../stores/auth";
 import type {
     AnalysisResult,
     AnalyzedItem,
@@ -38,9 +39,11 @@ import { fetchProfile, updateProfile } from "./profile";
 // --- Ordrer ---
 
 export function useOrders() {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<Order[]>({
     queryKey: ["orders"],
     queryFn: fetchOrders,
+    enabled: isInitialized,
   });
 }
 
@@ -84,9 +87,11 @@ export function useCancelOrder() {
 }
 
 export function useLastPickupDetails() {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<PickupDetails | null>({
     queryKey: ["lastPickupDetails"],
     queryFn: fetchLastPickupDetails,
+    enabled: isInitialized,
   });
 }
 
@@ -125,10 +130,11 @@ export function useCalculatePrice() {
 // --- Profil ---
 
 export function useProfile(userId: string) {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<Profile>({
     queryKey: ["profile", userId],
     queryFn: () => fetchProfile(userId),
-    enabled: !!userId,
+    enabled: !!userId && isInitialized,
   });
 }
 
@@ -152,23 +158,29 @@ export function useUpdateProfile() {
 // --- Admin ---
 
 export function useAdminStats() {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<AdminStats>({
     queryKey: ["admin", "stats"],
     queryFn: fetchAdminStats,
+    enabled: isInitialized,
   });
 }
 
 export function useAdminOrders(statusFilter?: OrderStatus) {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<Order[]>({
     queryKey: ["admin", "orders", statusFilter],
     queryFn: () => fetchAllOrders(statusFilter),
+    enabled: isInitialized,
   });
 }
 
 export function useAdminUsers() {
+  const isInitialized = useAuthStore((s) => s.isInitialized);
   return useQuery<AdminUserWithOrderCount[]>({
     queryKey: ["admin", "users"],
     queryFn: fetchAllUsers,
+    enabled: isInitialized,
   });
 }
 

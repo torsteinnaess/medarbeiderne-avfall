@@ -32,6 +32,10 @@ if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
   );
 }
 
+console.log(
+  `[Supabase] Initializing client — URL: ${supabaseUrl.replace(/https?:\/\//, "").slice(0, 20)}..., platform: ${Platform.OS}`,
+);
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage,

@@ -1,12 +1,12 @@
 import {
-    AddressAutocomplete,
-    Button,
-    DatePicker,
-    FormField,
-    StepIndicator,
-    TextArea,
-    Toggle,
-    ToggleChipGroup,
+  AddressAutocomplete,
+  Button,
+  DatePicker,
+  FormField,
+  StepIndicator,
+  TextArea,
+  Toggle,
+  ToggleChipGroup,
 } from "@/components/ui";
 import { useLastPickupDetails } from "@/lib/api/hooks";
 import { useAuthStore } from "@/lib/stores/auth";
@@ -82,6 +82,7 @@ export default function PickupDetailsScreen() {
     pickupDetails?.pickup_time_window ?? "08:00-12:00",
   );
   const [notes, setNotes] = useState(pickupDetails?.notes ?? "");
+  const [addressTouched, setAddressTouched] = useState(false);
 
   // Pre-fill from last order if user hasn't already filled in details
   useEffect(() => {
@@ -100,8 +101,14 @@ export default function PickupDetailsScreen() {
   }, [lastPickup, pickupDetails]);
 
   const canProceed = address.trim().length > 0;
+  const addressError =
+    addressTouched && !canProceed ? "Adresse er påkrevd" : undefined;
 
   const handleNext = () => {
+    if (!canProceed) {
+      setAddressTouched(true);
+      return;
+    }
     const details: PickupDetails = {
       address: address.trim(),
       lat,
@@ -140,15 +147,17 @@ export default function PickupDetailsScreen() {
       >
         <H2 color="$textPrimary">Hentedetaljer</H2>
 
-        <FormField label="Adresse">
+        <FormField label="Adresse" error={addressError}>
           <AddressAutocomplete
             value={address}
             onSelect={(result) => {
               setAddress(result.address);
               setLat(result.lat);
               setLng(result.lng);
+              setAddressTouched(false);
             }}
             placeholder="Søk etter adresse..."
+            error={!!addressError}
           />
         </FormField>
 
@@ -217,13 +226,7 @@ export default function PickupDetailsScreen() {
         width="100%"
         alignSelf="center"
       >
-        <Button
-          variant="primary"
-          size="lg"
-          fullWidth
-          onPress={handleNext}
-          disabled={!canProceed}
-        >
+        <Button variant="primary" size="lg" fullWidth onPress={handleNext}>
           Neste
         </Button>
       </YStack>

@@ -94,6 +94,7 @@ export default function RegisterScreen() {
           data: {
             name: name.trim(),
             phone: `+47${phone.trim()}`,
+            ...(isOrderFlow && { needs_password: true }),
           },
         },
       });

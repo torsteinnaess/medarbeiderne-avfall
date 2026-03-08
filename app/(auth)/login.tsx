@@ -87,7 +87,7 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert("Glemt passord", "Denne funksjonen er ikke tilgjengelig ennå.");
+    router.push("/(auth)/reset-password");
   };
 
   return (

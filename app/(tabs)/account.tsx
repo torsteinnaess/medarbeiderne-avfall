@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui";
+import { Button, CreatePasswordCard } from "@/components/ui";
 import { useAuthStore } from "@/lib/stores/auth";
 import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,6 +9,7 @@ import { Separator, Text, YStack } from "tamagui";
 export default function AccountScreen() {
   const router = useRouter();
   const { user, profile, signOut } = useAuthStore();
+  const needsPassword = user?.user_metadata?.needs_password === true;
 
   const handleSignOut = async () => {
     if (Platform.OS === "web") {
@@ -70,7 +71,8 @@ export default function AccountScreen() {
           {user.email}
         </Text>
       </YStack>
-      {/* Profile management will be added by Stream 6 */}
+
+      {needsPassword && <CreatePasswordCard />}
 
       {profile?.role === "admin" && (
         <>

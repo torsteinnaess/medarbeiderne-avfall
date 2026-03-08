@@ -260,9 +260,20 @@ export default function HomeScreen() {
             <H2 color="$textPrimary" fontFamily="$heading" textAlign="center">
               Transparent prising
             </H2>
-            <XStack gap="$lg" $sm={{ flexDirection: "column", gap: "$md" }}>
+            <XStack
+              gap="$lg"
+              flexWrap="wrap"
+              $sm={{ flexDirection: "column", gap: "$md" }}
+            >
               {PRICING_EXAMPLES.map((item) => (
-                <Card key={item.label} elevated flex={1} padding="$xl">
+                <Card
+                  key={item.label}
+                  elevated
+                  flex={1}
+                  flexBasis="auto"
+                  padding="$xl"
+                  $sm={{ flex: 0, flexBasis: "auto", width: "100%" }}
+                >
                   <YStack alignItems="center" gap="$md">
                     <View
                       width={48}

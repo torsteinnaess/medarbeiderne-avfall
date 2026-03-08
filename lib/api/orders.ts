@@ -19,15 +19,22 @@ interface CreateOrderInput {
 // Hent alle ordrer for innlogget bruker (med varer og bilder)
 export function fetchOrders(): Promise<Order[]> {
   return withNetworkError(async () => {
+    console.log("[fetchOrders] Starting query...");
+    const startTime = Date.now();
     const { data, error } = await supabase
       .from("orders")
       .select("*, items:order_items(*), images:order_images(*)")
       .order("created_at", { ascending: false });
 
+    const elapsed = Date.now() - startTime;
     if (error) {
+      console.error(`[fetchOrders] Failed after ${elapsed}ms:`, error.message);
       throw new Error(`Feil ved henting av ordrer: ${error.message}`);
     }
 
+    console.log(
+      `[fetchOrders] OK — ${data?.length ?? 0} orders in ${elapsed}ms`,
+    );
     return (data ?? []) as Order[];
   }, "Henting av ordrer");
 }
@@ -35,16 +42,21 @@ export function fetchOrders(): Promise<Order[]> {
 // Hent én ordre med ID (med varer og bilder)
 export function fetchOrder(id: string): Promise<Order> {
   return withNetworkError(async () => {
+    console.log(`[fetchOrder] Fetching order ${id.slice(0, 8)}...`);
+    const startTime = Date.now();
     const { data, error } = await supabase
       .from("orders")
       .select("*, items:order_items(*), images:order_images(*)")
       .eq("id", id)
       .single();
 
+    const elapsed = Date.now() - startTime;
     if (error) {
+      console.error(`[fetchOrder] Failed after ${elapsed}ms:`, error.message);
       throw new Error(`Feil ved henting av ordre: ${error.message}`);
     }
 
+    console.log(`[fetchOrder] OK — order ${id.slice(0, 8)} in ${elapsed}ms`);
     return data as Order;
   }, "Henting av ordre");
 }
