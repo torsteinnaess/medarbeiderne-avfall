@@ -24,12 +24,14 @@ interface AddressAutocompleteProps {
   value: string;
   onSelect: (result: AddressResult) => void;
   placeholder?: string;
+  error?: boolean;
 }
 
 export function AddressAutocomplete({
   value,
   onSelect,
   placeholder = "Søk etter adresse...",
+  error = false,
 }: AddressAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
@@ -92,7 +94,7 @@ export function AddressAutocomplete({
           fontFamily="$body"
           fontSize={16}
           borderWidth={1}
-          borderColor="$border"
+          borderColor={error ? "$error" : "$border"}
           borderRadius="$md"
           paddingHorizontal="$lg"
           paddingVertical="$md"
@@ -100,7 +102,10 @@ export function AddressAutocomplete({
           backgroundColor="$surface"
           color="$textPrimary"
           placeholderTextColor="$textMuted"
-          focusStyle={{ borderColor: "$borderFocus", borderWidth: 2 }}
+          focusStyle={{
+            borderColor: error ? "$error" : "$borderFocus",
+            borderWidth: 2,
+          }}
         />
         <XStack
           position="absolute"

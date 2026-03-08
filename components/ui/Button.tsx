@@ -12,38 +12,48 @@ export const Button = styled(TamaguiButton, {
       primary: {
         backgroundColor: "$primary",
         color: "#FFFFFF",
+        hoverStyle: { backgroundColor: "$primaryDark" },
       },
       secondary: {
         backgroundColor: "$secondary",
         color: "#FFFFFF",
+        hoverStyle: { backgroundColor: "$secondaryLight" },
       },
       outline: {
         backgroundColor: "transparent",
         borderWidth: 1.5,
         borderColor: "$primary",
         color: "$primary",
+        hoverStyle: { backgroundColor: "$primaryLight" },
       },
       ghost: {
         backgroundColor: "transparent",
+        borderWidth: 1.5,
+        borderColor: "$border",
         color: "$primary",
+        hoverStyle: {
+          backgroundColor: "$primaryLight",
+          borderColor: "$primary",
+        },
       },
       destructive: {
         backgroundColor: "$error",
         color: "#FFFFFF",
+        hoverStyle: { backgroundColor: "#C62828" },
       },
     },
     size: {
-      sm: {
+      $sm: {
         height: 36,
         paddingHorizontal: "$lg",
         fontSize: 14,
       },
-      md: {
+      $md: {
         height: 48,
         paddingHorizontal: "$xl",
         fontSize: 16,
       },
-      lg: {
+      $lg: {
         height: 56,
         paddingHorizontal: "$2xl",
         fontSize: 18,
@@ -58,7 +68,7 @@ export const Button = styled(TamaguiButton, {
 
   defaultVariants: {
     variant: "primary",
-    size: "md",
+    size: "$md",
   },
 });
 
@@ -76,14 +86,14 @@ export const ButtonText = styled(Text, {
       destructive: { color: "#FFFFFF" },
     },
     size: {
-      sm: { fontSize: 14 },
-      md: { fontSize: 16 },
-      lg: { fontSize: 18 },
+      $sm: { fontSize: 14 },
+      $md: { fontSize: 16 },
+      $lg: { fontSize: 18 },
     },
   } as const,
 
   defaultVariants: {
     variant: "primary",
-    size: "md",
+    size: "$md",
   },
 });

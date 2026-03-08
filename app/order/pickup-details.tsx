@@ -117,7 +117,7 @@ export default function PickupDetailsScreen() {
     setPickupDetails(details);
 
     if (!session) {
-      router.push("/(auth)/login");
+      router.push("/(auth)/register?returnTo=checkout");
       return;
     }
 
@@ -129,7 +129,13 @@ export default function PickupDetailsScreen() {
       <StepIndicator currentStep={3} />
       <ScrollView
         flex={1}
-        contentContainerStyle={{ padding: 24, gap: 20 }}
+        contentContainerStyle={{
+          padding: 24,
+          gap: 20,
+          maxWidth: 600,
+          width: "100%",
+          alignSelf: "center",
+        }}
         keyboardShouldPersistTaps="handled"
       >
         <H2 color="$textPrimary">Hentedetaljer</H2>
@@ -207,6 +213,9 @@ export default function PickupDetailsScreen() {
         paddingTop="$md"
         borderTopWidth={1}
         borderTopColor="$border"
+        maxWidth={600}
+        width="100%"
+        alignSelf="center"
       >
         <Button
           variant="primary"

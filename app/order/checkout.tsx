@@ -235,7 +235,7 @@ export default function CheckoutScreen() {
           </Text>
           <Button
             variant="primary"
-            size="md"
+            size="$md"
             onPress={() => {
               hasStartedPrice.current = false;
               priceMutation.reset();
@@ -275,7 +275,7 @@ export default function CheckoutScreen() {
           <Text fontSize={16} color="$textSecondary">
             Ingen prisdata tilgjengelig.
           </Text>
-          <Button variant="outline" size="md" onPress={() => router.back()}>
+          <Button variant="outline" size="$md" onPress={() => router.back()}>
             Tilbake
           </Button>
         </YStack>
@@ -286,7 +286,16 @@ export default function CheckoutScreen() {
   return (
     <YStack flex={1} backgroundColor="$background">
       <StepIndicator currentStep={4} />
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 16 }}>
+      <ScrollView
+        flex={1}
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          maxWidth: 600,
+          width: "100%",
+          alignSelf: "center",
+        }}
+      >
         <H2 color="$textPrimary">Prisoversikt og betaling</H2>
 
         {/* Hentedetaljer */}
@@ -449,10 +458,13 @@ export default function CheckoutScreen() {
         gap="$md"
         borderTopWidth={1}
         borderTopColor="$border"
+        maxWidth={600}
+        width="100%"
+        alignSelf="center"
       >
         <Button
           variant="primary"
-          size="lg"
+          size="$lg"
           fullWidth
           onPress={handleConfirm}
           disabled={!pickupDetails || !breakdown || !userId || isProcessing}
@@ -461,7 +473,7 @@ export default function CheckoutScreen() {
         </Button>
         <Button
           variant="ghost"
-          size="md"
+          size="$md"
           fullWidth
           onPress={() => router.back()}
         >

@@ -144,7 +144,7 @@ export default function HomeScreen() {
             <YStack gap="$md" width="100%" maxWidth={400} marginTop="$md">
               <Button
                 variant="outline"
-                size="lg"
+                size="$lg"
                 fullWidth
                 backgroundColor="#FFFFFF"
                 borderColor="#FFFFFF"
@@ -155,7 +155,7 @@ export default function HomeScreen() {
               </Button>
               <Button
                 variant="ghost"
-                size="md"
+                size="$md"
                 fullWidth
                 color="#FFFFFF"
                 onPress={scrollToHowItWorks}
@@ -380,7 +380,7 @@ export default function HomeScreen() {
               </Text>
               <Button
                 variant="primary"
-                size="lg"
+                size="$lg"
                 fullWidth
                 maxWidth={400}
                 onPress={() => router.push("/order/upload")}

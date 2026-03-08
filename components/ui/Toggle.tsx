@@ -1,6 +1,6 @@
 import { colors } from "@/lib/theme";
 import { useEffect } from "react";
-import { Pressable } from "react-native";
+import { Platform, Pressable } from "react-native";
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -61,11 +61,16 @@ export function Toggle({ checked, onCheckedChange, label }: ToggleProps) {
                 height: THUMB_SIZE,
                 borderRadius: THUMB_SIZE / 2,
                 backgroundColor: "#FFFFFF",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.15,
-                shadowRadius: 2,
-                elevation: 2,
+                ...Platform.select({
+                  web: { boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.15)" },
+                  default: {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 2,
+                    elevation: 2,
+                  },
+                }),
               },
               thumbStyle,
             ]}

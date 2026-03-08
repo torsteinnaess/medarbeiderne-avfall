@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/Button";
 import { FormField, Input } from "@/components/ui/Input";
-import { useOrderDraftStore } from "@/lib/stores/order-draft";
 import { supabase } from "@/lib/supabase";
 import { colors } from "@/lib/theme";
 import {
@@ -8,7 +7,7 @@ import {
     isNetworkError,
 } from "@/lib/utils/network-error";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
     Alert,
@@ -34,6 +33,7 @@ function translateAuthError(message: string): string {
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -61,10 +61,8 @@ export default function LoginScreen() {
       if (authError) {
         setError(translateAuthError(authError.message));
       } else {
-        // Login succeeded — if in order flow, continue to checkout
-        const hasOrderDraft =
-          useOrderDraftStore.getState().pickupDetails !== null;
-        if (hasOrderDraft) {
+        // Login succeeded — if explicitly from order flow, continue to checkout
+        if (returnTo === "checkout") {
           router.replace("/order/checkout");
         } else {
           router.replace("/");
@@ -179,7 +177,7 @@ export default function LoginScreen() {
 
               <Button
                 variant="primary"
-                size="lg"
+                size="$lg"
                 fullWidth
                 onPress={handleLogin}
                 disabled={isLoading}
@@ -188,7 +186,7 @@ export default function LoginScreen() {
                 {isLoading ? "Logger inn..." : "Logg inn"}
               </Button>
 
-              <Button variant="ghost" size="sm" onPress={handleForgotPassword}>
+              <Button variant="ghost" size="$sm" onPress={handleForgotPassword}>
                 Glemt passord?
               </Button>
             </YStack>
@@ -206,7 +204,7 @@ export default function LoginScreen() {
             <YStack gap="$md">
               <Button
                 variant="outline"
-                size="md"
+                size="$md"
                 fullWidth
                 onPress={() => handleSocialSignIn("apple")}
                 icon={
@@ -221,7 +219,7 @@ export default function LoginScreen() {
               </Button>
               <Button
                 variant="outline"
-                size="md"
+                size="$md"
                 fullWidth
                 onPress={() => handleSocialSignIn("google")}
                 icon={
@@ -245,7 +243,11 @@ export default function LoginScreen() {
                 color="$primary"
                 fontSize={14}
                 fontWeight="600"
-                onPress={() => router.push("/(auth)/register")}
+                onPress={() =>
+                  router.push(
+                    `/(auth)/register${returnTo ? `?returnTo=${returnTo}` : ""}`,
+                  )
+                }
                 pressStyle={{ opacity: 0.7 }}
                 cursor="pointer"
               >

@@ -2,7 +2,13 @@
 import { useToastStore } from "@/lib/stores/toast";
 import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text as RNText, StyleSheet, View } from "react-native";
+import {
+    Platform,
+    Pressable,
+    Text as RNText,
+    StyleSheet,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>["name"];
@@ -78,11 +84,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  shadow: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
+  shadow: Platform.select({
+    web: { boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.15)" },
+    default: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+  }),
 });

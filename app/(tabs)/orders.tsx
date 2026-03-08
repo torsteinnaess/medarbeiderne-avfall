@@ -14,7 +14,7 @@ function OrderRow({ order }: { order: Order }) {
 
   return (
     <Pressable onPress={() => router.push(`/orders/${order.id}`)}>
-      <Card marginBottom="$sm" pressable>
+      <Card marginBottom="$sm">
         <XStack justifyContent="space-between" alignItems="center">
           <YStack flex={1} gap="$xs">
             <XStack alignItems="center" gap="$sm">
@@ -94,7 +94,7 @@ export default function OrdersScreen() {
             </Text>
             <Button
               variant="primary"
-              size="md"
+              size="$md"
               onPress={() => router.push("/order/upload")}
               marginTop="$md"
             >

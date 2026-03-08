@@ -229,7 +229,7 @@ export default function AnalysisScreen() {
           </Text>
           <Button
             variant="primary"
-            size="md"
+            size="$md"
             onPress={() => {
               hasStarted.current = false;
               runAnalysis();
@@ -237,7 +237,7 @@ export default function AnalysisScreen() {
           >
             Prøv igjen
           </Button>
-          <Button variant="ghost" size="md" onPress={() => handleAddItem()}>
+          <Button variant="ghost" size="$md" onPress={() => handleAddItem()}>
             Legg til manuelt i stedet
           </Button>
         </YStack>
@@ -248,7 +248,16 @@ export default function AnalysisScreen() {
   return (
     <YStack flex={1} backgroundColor="$background">
       <StepIndicator currentStep={2} />
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 16 }}>
+      <ScrollView
+        flex={1}
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          maxWidth: 600,
+          width: "100%",
+          alignSelf: "center",
+        }}
+      >
         <H2 color="$textPrimary">
           {analyzedItems.length > 0
             ? "Analyseresultater"
@@ -313,7 +322,7 @@ export default function AnalysisScreen() {
 
         <Button
           variant="outline"
-          size="md"
+          size="$md"
           fullWidth
           onPress={handleAddItem}
           icon={
@@ -334,10 +343,13 @@ export default function AnalysisScreen() {
         gap="$md"
         borderTopWidth={1}
         borderTopColor="$border"
+        maxWidth={600}
+        width="100%"
+        alignSelf="center"
       >
         <Button
           variant="primary"
-          size="lg"
+          size="$lg"
           fullWidth
           onPress={() => router.push("/order/pickup-details")}
           disabled={analyzedItems.length === 0}
@@ -346,7 +358,7 @@ export default function AnalysisScreen() {
         </Button>
         <Button
           variant="ghost"
-          size="md"
+          size="$md"
           fullWidth
           onPress={() => router.back()}
         >

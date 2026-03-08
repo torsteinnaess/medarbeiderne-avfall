@@ -84,20 +84,16 @@ export default function UploadScreen() {
   return (
     <YStack flex={1} backgroundColor="$background">
       <StepIndicator currentStep={1} />
-      <ScrollView flex={1} contentContainerStyle={{ padding: 24, gap: 16 }}>
-        <XStack>
-          <Text
-            color="$primary"
-            fontSize={14}
-            fontWeight="600"
-            onPress={() => router.back()}
-            pressStyle={{ opacity: 0.7 }}
-            cursor="pointer"
-          >
-            <Ionicons name="arrow-back" size={16} color={colors.primary} />{" "}
-            Tilbake
-          </Text>
-        </XStack>
+      <ScrollView
+        flex={1}
+        contentContainerStyle={{
+          padding: 24,
+          gap: 16,
+          maxWidth: 600,
+          width: "100%",
+          alignSelf: "center",
+        }}
+      >
         <H2 color="$textPrimary">Last opp bilder av avfallet</H2>
         <Text fontSize={14} color="$textSecondary">
           Ta eller velg bilder av gjenstandene du ønsker hentet. Minimum 1, maks{" "}
@@ -167,7 +163,7 @@ export default function UploadScreen() {
         <YStack gap="$md">
           <Button
             variant="outline"
-            size="md"
+            size="$md"
             fullWidth
             onPress={handleCamera}
             disabled={remaining <= 0 || isLoading}
@@ -183,7 +179,7 @@ export default function UploadScreen() {
           </Button>
           <Button
             variant="outline"
-            size="md"
+            size="$md"
             fullWidth
             onPress={handleGallery}
             disabled={remaining <= 0 || isLoading}
@@ -205,10 +201,13 @@ export default function UploadScreen() {
         paddingTop="$md"
         borderTopWidth={1}
         borderTopColor="$border"
+        maxWidth={600}
+        width="100%"
+        alignSelf="center"
       >
         <Button
           variant="primary"
-          size="lg"
+          size="$lg"
           fullWidth
           onPress={() => router.push("/order/analysis")}
           disabled={imageUris.length === 0}

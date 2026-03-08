@@ -18,7 +18,7 @@ export default function NotFoundScreen() {
           Denne siden finnes ikke
         </Text>
         <Link href="/" asChild>
-          <Button variant="primary" size="md">
+          <Button variant="primary" size="$md">
             Gå til forsiden
           </Button>
         </Link>

@@ -46,7 +46,7 @@ export default function AccountScreen() {
         </Text>
         <Button
           variant="primary"
-          size="md"
+          size="$md"
           onPress={() => router.push("/(auth)/login")}
         >
           Logg inn
@@ -77,7 +77,7 @@ export default function AccountScreen() {
           <Separator />
           <Button
             variant="secondary"
-            size="md"
+            size="$md"
             fullWidth
             onPress={() => router.push("/(admin)")}
             icon={<Ionicons name="shield-outline" size={20} color="#FFFFFF" />}
@@ -90,7 +90,7 @@ export default function AccountScreen() {
       <Separator />
       <Button
         variant="destructive"
-        size="md"
+        size="$md"
         fullWidth
         onPress={handleSignOut}
         icon={<Ionicons name="log-out-outline" size={20} color="#FFFFFF" />}

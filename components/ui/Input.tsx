@@ -72,14 +72,29 @@ const Label = styled(Text, {
 interface FormFieldProps {
   label: string;
   error?: string;
+  required?: boolean;
   children: React.ReactNode;
   style?: Record<string, string | number>;
 }
 
-export function FormField({ label, error, children, style }: FormFieldProps) {
+export function FormField({
+  label,
+  error,
+  required,
+  children,
+  style,
+}: FormFieldProps) {
   return (
     <YStack gap="$xs" style={style}>
-      <Label>{label}</Label>
+      <Label>
+        {label}
+        {required && (
+          <Text color="$error" fontSize={14}>
+            {" "}
+            *
+          </Text>
+        )}
+      </Label>
       {children}
       {error && <ErrorText>{error}</ErrorText>}
     </YStack>

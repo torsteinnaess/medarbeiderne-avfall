@@ -99,7 +99,7 @@ export default function AdminOrderDetailScreen() {
         </Text>
         <Button
           variant="outline"
-          size="sm"
+          size="$sm"
           marginTop="$lg"
           onPress={() => router.back()}
         >
@@ -208,7 +208,7 @@ export default function AdminOrderDetailScreen() {
             <Button
               key={s}
               variant="outline"
-              size="sm"
+              size="$sm"
               onPress={() => handleStatusChange(s)}
               disabled={updateStatus.isPending}
             >

@@ -5,14 +5,7 @@ import { colors } from "@/lib/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import {
-    Separator,
-    Spinner,
-    Text,
-    View,
-    XStack,
-    YStack
-} from "tamagui";
+import { Separator, Spinner, Text, View, XStack, YStack } from "tamagui";
 
 function formatKr(amount: number): string {
   return `kr ${amount.toLocaleString("nb-NO", { minimumFractionDigits: 0 })},-`;
@@ -59,6 +52,9 @@ export default function ConfirmationScreen() {
         alignItems="center"
         justifyContent="center"
         gap="$lg"
+        maxWidth={600}
+        width="100%"
+        alignSelf="center"
       >
         {isLoading && (
           <>
@@ -170,7 +166,7 @@ export default function ConfirmationScreen() {
         <YStack gap="$md" width="100%" marginTop="$xl">
           <Button
             variant="primary"
-            size="md"
+            size="$md"
             fullWidth
             onPress={() => router.replace("/(tabs)/orders")}
           >
@@ -178,7 +174,7 @@ export default function ConfirmationScreen() {
           </Button>
           <Button
             variant="outline"
-            size="md"
+            size="$md"
             fullWidth
             onPress={() => router.replace("/(tabs)")}
           >
